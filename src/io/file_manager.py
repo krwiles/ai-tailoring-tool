@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 
 from docx import Document
+from typing import List
 
 from src.config import AppSettings
 from src.model import JobData
@@ -22,7 +23,7 @@ class FileManager:
             raise FileNotFoundError(f"Expected text file at: {full_path}")
         return full_path.read_text(encoding="utf-8")
 
-    def read_docx_paragraphs(self, file_path: Path) -> list[str]:
+    def read_docx_paragraphs(self, file_path: Path) -> List[str]:
         """Read docx file into list of paragraphs"""
         full_path = self.project_dir / file_path
         if not full_path.exists():

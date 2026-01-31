@@ -1,11 +1,35 @@
-from dataclasses import dataclass
+import configparser
 from pathlib import Path
 
+DEFAULT_INI = """\
+[llm]
+model = gpt-5-mini
 
-@dataclass(frozen=True)
+[paths]
+output_dir = C:/Users/assas/OneDrive/Career
+
+[files]
+cover_letter_out = Template_cover_letter.docx
+resume_out = Template_resume.docx
+"""
+
+
 class AppSettings:
-    model: str = "gpt-5-mini"
-    project_dir: Path = Path(__file__).resolve().parents[2]
-    output_dir: Path = Path(r"C:\Users\assas\OneDrive\Career")
-    cover_letter_name: str = "Kurtis_Wiles_cover_letter.docx"
-    resume_name: str = "Kurtis_Wiles_resume.docx"
+    def __init__(self):
+        self.project_dir = Path(__file__).resolve().parents[2]
+        self.config_path = self.project_dir.joinpath("settings.ini").resolve()
+
+        if not self.config_path.exists():
+            self._create_default()
+
+        self.config = configparser.ConfigParser()
+        self.config.read(self.config_path)
+
+        self.model = self.config["llm"]["model"]
+        self.output_dir = Path(self.config["paths"]["output_dir"]).resolve()
+        self.cover_letter_name = self.config["files"]["cover_letter_out"]
+        self.resume_name = self.config["files"]["resume_out"]
+
+    def _create_default(self):
+        print("No settings.ini found. Creating default.")
+        self.config_path.write_text(DEFAULT_INI)

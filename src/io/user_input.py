@@ -1,3 +1,4 @@
+import threading
 import tkinter as tk
 from tkinter import scrolledtext
 
@@ -68,14 +69,12 @@ class AppGUI:
         self.root.grid_columnconfigure(1, weight=1)
 
     def _generate(self):
-        """Called when user clicks 'Generate'"""
-
         company = self.company_entry.get()
         position = self.position_entry.get()
-        location = self.location_entry.get()
+        location = self.location_entry.get() or ""
         description = self.description_text.get("1.0", tk.END).strip()
 
-        if not company or not position or not location or not description:
+        if not company or not position or not description:
             self.status_label.config(text="Please fill in all fields.", fg="red")
             return
 
@@ -86,10 +85,37 @@ class AppGUI:
             job_description=description
         )
 
-        self.resume_workflow.run(job)
-        if self.cover_var.get():
-            self.cover_workflow.run(job)
+        # Run workflows in background thread
+        thread = threading.Thread(
+            target=self._run_workflows,
+            args=(job,),
+            daemon=True
+        )
+        thread.start()
 
+    def _run_workflows(self, job: JobData):
+        try:
+            # UI feedback immediately
+            self.status_label.config(text="Generating Resume...", fg="blue")
+            self.resume_workflow.run(job)
+
+            if self.cover_var.get():
+                self.status_label.config(text="Generating Cover Letter...", fg="blue")
+                self.cover_workflow.run(job)
+
+            # Schedule UI update on main thread
+            self.root.after(
+                0,
+                lambda: self._on_success(job)
+            )
+
+        except Exception as e:
+            self.root.after(
+                0,
+                lambda: self._on_error(str(e))
+            )
+
+    def _on_success(self, job):
         self.status_label.config(
             text=f"Files generated successfully for {job.company} {job.job_title}",
             fg="green"
@@ -99,6 +125,9 @@ class AppGUI:
         self.position_entry.delete(0, tk.END)
         self.location_entry.delete(0, tk.END)
         self.description_text.delete("1.0", tk.END)
+
+    def _on_error(self, message):
+        self.status_label.config(text=message, fg="red")
 
     def run(self):
         """Start the Tkinter main loop"""

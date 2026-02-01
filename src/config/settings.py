@@ -6,7 +6,7 @@ DEFAULT_INI = """\
 model = gpt-5-mini
 
 [paths]
-output_dir = C:/Users/assas/OneDrive/Career
+output_dir = .
 
 [files]
 cover_letter_out = Template_cover_letter.docx

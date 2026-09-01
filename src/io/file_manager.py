@@ -1,5 +1,4 @@
 import shutil
-from datetime import date
 from pathlib import Path
 import re
 
@@ -7,7 +6,7 @@ from docx import Document
 from typing import List
 
 from src.config import AppSettings
-from src.model import JobData
+from src.model import JobData, render_cover_letter_text
 
 
 class FileManager:
@@ -77,16 +76,10 @@ class FileManager:
     def copy_cover_letter(self, destination: Path, job_data: JobData, template_path: Path):
         """Copy the selected cover letter template preserving formatting"""
         cover_letter = Document(self.project_dir / template_path)
-        today = date.today().strftime("%B %d, %Y")
 
         for para in cover_letter.paragraphs:
             for run in para.runs:
-                run.text = run.text.format(
-                    date=today,
-                    location=job_data.location,
-                    company=job_data.company,
-                    position=job_data.job_title
-                )
+                run.text = render_cover_letter_text(run.text, job_data)
 
         self.create_directory(destination)
         cover_letter.save(self.output_dir / destination / self.settings.cover_letter_name)

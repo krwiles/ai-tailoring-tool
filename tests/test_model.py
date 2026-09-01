@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.model import JobData, TemplateSelection, resolve_template_choice
+from src.model import JobData, TemplateSelection, resolve_template_choice, render_cover_letter_text
 
 
 # ---- resolve_template_choice ----
@@ -33,6 +33,24 @@ def test_template_selection_defaults_to_none():
     assert selection.cover_letter_template is None
     assert selection.resume_prompt is None
     assert selection.cover_letter_prompt is None
+
+
+def test_render_cover_letter_text_substitutes_all_placeholders():
+    job = JobData(job_title="Engineer", company="Acme", location="Remote", job_description="n/a")
+    text = "Dear {company}, applying for {position} in {location} on {date}."
+
+    result = render_cover_letter_text(text, job, today="August 31, 2026")
+
+    assert result == "Dear Acme, applying for Engineer in Remote on August 31, 2026."
+
+
+def test_render_cover_letter_text_defaults_to_todays_date():
+    from datetime import date
+
+    job = JobData(job_title="Engineer", company="Acme", location="Remote", job_description="n/a")
+    result = render_cover_letter_text("{date}", job)
+
+    assert result == date.today().strftime("%B %d, %Y")
 
 
 def test_job_data_holds_all_fields():

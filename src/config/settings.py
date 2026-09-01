@@ -7,7 +7,7 @@ from src.model import TemplateSelection
 
 DEFAULT_INI = """\
 [llm]
-model = gpt-5-mini
+model = gpt-5.6-luna
 
 [paths]
 output_dir = .

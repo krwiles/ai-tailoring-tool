@@ -14,16 +14,14 @@ def main():
     resume_workflow = ResumeWorkflow(
         prompt_builder=resume_prompt,
         llm_client=llm,
-        file_manager=file_manager,
-        settings=settings
+        file_manager=file_manager
     )
 
     cover_letter_prompt = CoverLetterPromptBuilder(file_manager)
     cover_letter_workflow = CoverLetterWorkflow(
         prompt_builder=cover_letter_prompt,
         llm_client=llm,
-        file_manager=file_manager,
-        settings=settings
+        file_manager=file_manager
     )
 
     gui = AppGUI(

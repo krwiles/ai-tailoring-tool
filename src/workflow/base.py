@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from src.config import AppSettings
 from src.io import FileManager
 from src.llm import LLMClient
 from src.model import JobData, TemplateSelection
@@ -13,14 +12,12 @@ class BaseWorkflow(ABC):
     def __init__(self,
                  prompt_builder: PromptBuilder,
                  llm_client: LLMClient,
-                 file_manager: FileManager,
-                 settings: AppSettings
+                 file_manager: FileManager
                  ):
 
         self.prompt_builder = prompt_builder
         self.llm_client = llm_client
         self.file_manager = file_manager
-        self.settings = settings
 
     def run(self, job_data: JobData, template_selection: TemplateSelection):
         prompt = self.prompt_builder.build(job_data, template_selection)

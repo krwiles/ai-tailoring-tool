@@ -21,7 +21,7 @@ def test_resume_workflow_run_orchestrates_prompt_llm_copy_and_write():
     job = JobData(job_title="Engineer", company="Acme", location="Remote", job_description="Do stuff")
     selection = TemplateSelection(resume_template=Path("data", "resumes", "x.docx"))
 
-    workflow = ResumeWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm, settings=Mock())
+    workflow = ResumeWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm)
     workflow.run(job, selection)
 
     mock_pb.build.assert_called_once_with(job, selection)
@@ -42,7 +42,7 @@ def test_cover_letter_workflow_run_orchestrates_prompt_llm_copy_and_write():
     job = JobData(job_title="Engineer", company="Acme", location="Remote", job_description="Do stuff")
     selection = TemplateSelection(cover_letter_template=Path("data", "cover_letters", "x.docx"))
 
-    workflow = CoverLetterWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm, settings=Mock())
+    workflow = CoverLetterWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm)
     workflow.run(job, selection)
 
     mock_pb.build.assert_called_once_with(job, selection)
@@ -64,7 +64,7 @@ def test_run_sanitizes_company_and_title_into_the_output_directory():
     job = JobData(job_title="Role/With/Slashes", company="Acme/Inc", location="", job_description="")
     selection = TemplateSelection()
 
-    workflow = ResumeWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm, settings=Mock())
+    workflow = ResumeWorkflow(prompt_builder=mock_pb, llm_client=mock_llm, file_manager=mock_fm)
     workflow.run(job, selection)
 
     mock_fm.sanitize_dirname.assert_any_call("Acme/Inc")

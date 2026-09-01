@@ -6,7 +6,7 @@ from typing import Dict
 
 from src.config import AppSettings
 from src.io import FileManager
-from src.model import JobData, TemplateSelection
+from src.model import JobData, TemplateSelection, resolve_template_choice
 from src.workflow import ResumeWorkflow, CoverLetterWorkflow
 
 
@@ -166,13 +166,7 @@ class AppGUI:
         for field_name, folder, pattern, label in self.TEMPLATE_CATEGORIES:
             files = self.file_manager.list_files(folder, pattern)
             saved_path = getattr(saved, field_name)
-
-            if saved_path in files:
-                selected = saved_path
-            elif files:
-                selected = files[0]
-            else:
-                selected = None
+            selected = resolve_template_choice(files, saved_path)
 
             name_map = {f.name: f for f in files}
             self.template_maps[field_name] = name_map

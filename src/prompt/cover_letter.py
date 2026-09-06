@@ -1,24 +1,14 @@
-from datetime import date
-from pathlib import Path
-
-from src.model import JobData
+from src.model import JobData, TemplateSelection, render_cover_letter_text
 from src.prompt import PromptBuilder
 
 
 class CoverLetterPromptBuilder(PromptBuilder):
 
-    def build(self, job_data: JobData) -> str:
-        today = date.today().strftime("%B %d, %Y")
+    def build(self, job_data: JobData, template_selection: TemplateSelection) -> str:
+        cover_letter = self.file_manager.read_docx(template_selection.cover_letter_template)
+        cover_letter = render_cover_letter_text(cover_letter, job_data)
 
-        cover_letter = self.file_manager.read_docx(Path("data", "cover_letter.docx"))
-        cover_letter = cover_letter.format(
-            date=today,
-            location=job_data.location,
-            company=job_data.company,
-            position=job_data.job_title
-        )
-
-        prompt = self.file_manager.load_text(Path("prompts", "cover_letter_prompt.txt"))
+        prompt = self.file_manager.load_text(template_selection.cover_letter_prompt)
         prompt = prompt.format(
             cover_letter=cover_letter,
             job_description=job_data.job_description

@@ -1,5 +1,4 @@
 import shutil
-from datetime import date
 from pathlib import Path
 import re
 
@@ -7,7 +6,7 @@ from docx import Document
 from typing import List
 
 from src.config import AppSettings
-from src.model import JobData
+from src.model import JobData, render_cover_letter_text
 
 
 class FileManager:
@@ -35,6 +34,24 @@ class FileManager:
         """Read docx file into one string"""
         return "\n".join(self.read_docx_paragraphs(file_path))
 
+    def list_files(self, directory: Path, pattern: str) -> List[Path]:
+        """List files in a project-relative directory matching a glob pattern.
+
+        Returns paths relative to project_dir, sorted alphabetically (case-insensitive).
+        Excludes hidden files and Office lock files (e.g. "~$resume.docx", created
+        while a docx is open in Word). Returns an empty list if the directory doesn't exist.
+        """
+        full_path = self.project_dir / directory
+        if not full_path.exists():
+            return []
+
+        matches = [
+            p for p in full_path.glob(pattern)
+            if p.is_file() and not p.name.startswith("~$") and not p.name.startswith(".")
+        ]
+        matches.sort(key=lambda p: p.name.lower())
+        return [Path(directory) / p.name for p in matches]
+
     def write_docx(self, text: str, file_path: Path) -> None:
         """Write to docx"""
         doc = Document()
@@ -42,11 +59,11 @@ class FileManager:
             doc.add_paragraph(para_text)
         doc.save(self.output_dir / file_path)
 
-    def copy_resume(self, destination: Path):
-        """Copy the default resume to the destination"""
-        resume = (self.project_dir / "data" / "resume.docx").resolve()
+    def copy_resume(self, destination: Path, template_path: Path):
+        """Copy the selected resume template to the destination"""
+        resume = (self.project_dir / template_path).resolve()
         if not resume.exists():
-            raise FileNotFoundError(f"Resume not found: {resume}")
+            raise FileNotFoundError(f"Resume template not found: {resume}")
 
         self.create_directory(destination)
         dest_folder = (self.output_dir / destination).resolve()
@@ -56,19 +73,13 @@ class FileManager:
         full_path = self.output_dir / dir_path
         full_path.mkdir(parents=True, exist_ok=True)
 
-    def copy_cover_letter(self, destination: Path, job_data: JobData):
-        """Copy the default cover letter preserving formatting"""
-        cover_letter = Document(self.project_dir / "data" / "cover_letter.docx")
-        today = date.today().strftime("%B %d, %Y")
+    def copy_cover_letter(self, destination: Path, job_data: JobData, template_path: Path):
+        """Copy the selected cover letter template preserving formatting"""
+        cover_letter = Document(self.project_dir / template_path)
 
         for para in cover_letter.paragraphs:
             for run in para.runs:
-                run.text = run.text.format(
-                    date=today,
-                    location=job_data.location,
-                    company=job_data.company,
-                    position=job_data.job_title
-                )
+                run.text = render_cover_letter_text(run.text, job_data)
 
         self.create_directory(destination)
         cover_letter.save(self.output_dir / destination / self.settings.cover_letter_name)

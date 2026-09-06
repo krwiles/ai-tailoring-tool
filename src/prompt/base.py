@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.io import FileManager
+from src.model import TemplateSelection
 
 
 class PromptBuilder(ABC):
@@ -9,6 +10,6 @@ class PromptBuilder(ABC):
         self.file_manager = file_manager
 
     @abstractmethod
-    def build(self, job_data):
+    def build(self, job_data, template_selection: TemplateSelection):
         """Return full prompt string for LLM"""
         pass
